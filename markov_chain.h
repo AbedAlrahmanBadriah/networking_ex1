@@ -17,6 +17,7 @@ typedef struct MarkovChain{
 typedef struct MarkovNode{
     char *data;
     struct MarkovNodeFrequency* frequency_list;
+
     // any other field you need
 } MarkovNode;
 

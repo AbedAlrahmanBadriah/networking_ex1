@@ -9,4 +9,5 @@ add_executable(ex1
         tweets_generator.c
         linked_list.c
         linked_list.h
-        markov_chain.h)
+        markov_chain.h
+)
