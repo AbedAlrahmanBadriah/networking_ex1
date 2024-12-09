@@ -128,120 +128,70 @@ Node* add_to_database(MarkovChain *markov_chain, char *data_ptr) {
 }
 
 
-//int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
-//
-//    //check if first_node or second_node exist
-//    if(first_node == NULL || second_node == NULL){
-//        return 1;
-//    }
-//
-//
-//    // Check if the frequency list exists
-//    if (first_node->frequency_list == NULL) {
-//        first_node->frequency_list = malloc(2 * sizeof(MarkovNodeFrequency));
-//        if (first_node->frequency_list == NULL) {
-//            fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
-//            return 1;
-//        }
-//
-//        // Initialize the new list
-//        first_node->frequency_list[0].markov_node = second_node;
-//        first_node->frequency_list[0].frequency = 1; // Initial frequency
-//        first_node->frequency_list[1].markov_node = NULL; // Null terminator
-//        first_node->frequency_list->size = 1; // Set size to 1
-//        return 0;
-//    }
-//
-//
-//
-//    //finding the frequencyList size
-//    int currentSize = first_node->frequency_list->size;
-//
-//
-//    //checking if the second_node already exists in the frequencyList
-//    //if it does exist, it adds 1 to it frequency
-//    for(int i = 0; i< currentSize; i++){
-//        MarkovNodeFrequency *tmp = &first_node->frequency_list[i];
-//        if(tmp->markov_node == second_node){
-//            tmp->frequency++;
-//            return 0;
-//        }
-//    }
-//
-//    //allocating space for adding the second_node if it doesnt already exists
-//    MarkovNodeFrequency *newList =
-//            realloc(first_node->frequency_list, (currentSize +2) * sizeof (MarkovNodeFrequency));
-//
-//
-//    if(newList == NULL){
-//        fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
-//        free(newList);
-//        return 1;
-//    }
-//
-//    //updating the frequencyList after adding the new node
-//    first_node->frequency_list = newList;
-//    first_node->frequency_list[currentSize].markov_node = second_node;
-//    first_node->frequency_list[currentSize].frequency = 1; // Initial frequency
-//    // Add a null terminator to mark the end of the list
-//    first_node->frequency_list[currentSize + 1].markov_node = NULL;
-//    first_node->frequency_list->size++;
-//
-//
-//    return 0;
-//}
+int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
 
-
-int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node) {
-    char* word = first_node->data;
-    size_t len = strlen(word);
-    if (word[len - 1] == '.'){
-        return 0;
+    //check if first_node or second_node exist
+    if(first_node == NULL || second_node == NULL){
+        return 1;
     }
-    int count = 0;
 
-    // If the list is NULL, initialize it
+
+    // Check if the frequency list exists
     if (first_node->frequency_list == NULL) {
-        first_node->frequency_list = malloc(2 * sizeof(MarkovNodeFrequency)); // Space for one node + null terminator
+        first_node->frequency_list = malloc(2 * sizeof(MarkovNodeFrequency));
         if (first_node->frequency_list == NULL) {
             fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
-            return 1; // Allocation failed
+            return 1;
         }
+
+        // Initialize the new list
         first_node->frequency_list[0].markov_node = second_node;
-        first_node->frequency_list[0].frequency = 1;
-        first_node->frequency_list[1].markov_node = NULL;
-        first_node->frequency_list[1].frequency = 0;
+        first_node->frequency_list[0].frequency = 1; // Initial frequency
+        first_node->frequency_list[1].markov_node = NULL; // Null terminator
+        first_node->frequency_list->size = 1; // Set size to 1
         return 0;
     }
 
-    else {
-        // Find if the second_node already exists in the list
-        while (first_node->frequency_list[count].markov_node != NULL) {
-            if (strcmp(first_node->frequency_list[count].markov_node->data, second_node->data) == 0) {
-                first_node->frequency_list[count].frequency++;
-                return 0; // Node found and frequency incremented
-            }
-            count++;
-        }
 
-        // Node not found, reallocate memory to add a new entry
-        first_node->frequency_list = realloc(
-                first_node->frequency_list,
-                (count + 2) * sizeof(MarkovNodeFrequency) // New node
-        );
-        if (first_node->frequency_list == NULL) {
-            fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
-            return 1; // Allocation failed
-        }
 
-        // Add the new node
-        first_node->frequency_list[count].markov_node = second_node;
-        first_node->frequency_list[count].frequency = 1;
-        first_node->frequency_list[count + 1].markov_node = NULL; // NULL-terminate.
-        first_node->frequency_list[count + 1].frequency = 0;
+    //finding the frequencyList size
+    int currentSize = first_node->frequency_list->size;
+
+
+    //checking if the second_node already exists in the frequencyList
+    //if it does exist, it adds 1 to it frequency
+    for(int i = 0; i< currentSize; i++){
+        MarkovNodeFrequency *tmp = &first_node->frequency_list[i];
+        if(tmp->markov_node == second_node){
+            tmp->frequency++;
+            return 0;
+        }
     }
+
+    //allocating space for adding the second_node if it doesnt already exists
+    MarkovNodeFrequency *newList =
+            realloc(first_node->frequency_list, (currentSize +2) * sizeof (MarkovNodeFrequency));
+
+
+    if(newList == NULL){
+        fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
+        free(newList);
+        return 1;
+    }
+
+    //updating the frequencyList after adding the new node
+    first_node->frequency_list = newList;
+    first_node->frequency_list[currentSize].markov_node = second_node;
+    first_node->frequency_list[currentSize].frequency = 1; // Initial frequency
+    // Add a null terminator to mark the end of the list
+    first_node->frequency_list[currentSize + 1].markov_node = NULL;
+    first_node->frequency_list->size++;
+
+
     return 0;
 }
+
+
 
 
 
