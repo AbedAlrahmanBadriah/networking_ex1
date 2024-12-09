@@ -265,30 +265,47 @@ MarkovNode* get_next_random_node(MarkovNode *cur_markov_node){
     return NULL;
 }
 
-void generate_tweet(MarkovNode *first_node, int max_length){
-    if(first_node == NULL || max_length <= 0){
-        fprintf(stderr, "Invalid parameter");
-        exit(EXIT_FAILURE);
-    }
+//void generate_tweet(MarkovNode *first_node, int max_length){
+//    if(first_node == NULL || max_length <= 0){
+//        fprintf(stderr, "Invalid parameter");
+//        exit(EXIT_FAILURE);
+//    }
+//
+//    MarkovNode *current = first_node;
+//    if(current == NULL){
+//        free(current);
+//        return;
+//    }
+//    int wordCounter = 0;
+//
+//    while(wordCounter < max_length){
+//        printf("%s", current->data);
+//        wordCounter++;
+//
+//        if(current->data[strlen(current->data) - 1] == '.')
+//            break;
+//
+//        if(wordCounter < max_length)
+//            printf(" ");
+//
+//        current = get_next_random_node(current);
+//    }
+//    printf("\n");
+//}
 
-    MarkovNode *current = first_node;
-    if(current == NULL){
-        free(current);
+void generate_tweet(MarkovNode *first_node, int max_length) {
+    if (first_node == NULL) {
+        fprintf(stderr, "Error: First node is NULL.\n");
         return;
     }
-    int wordCounter = 0;
-
-    while(wordCounter < max_length){
-        printf("%s", current->data);
-        wordCounter++;
-
-        if(current->data[strlen(current->data) - 1] == '.')
+    MarkovNode *current_node = first_node;
+    for (int i = 0; i < max_length && current_node != NULL; i++) {
+        if (current_node->frequency_list == NULL || i == max_length - 1) {
+            printf("%s", current_node->data);
             break;
-
-        if(wordCounter < max_length)
-            printf(" ");
-
-        current = get_next_random_node(current);
+        }
+        printf("%s ", current_node->data);
+        current_node = get_next_random_node(current_node);
     }
     printf("\n");
 }

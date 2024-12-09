@@ -9,53 +9,56 @@
 #define DELIMITERS " \n\t\r"
 
 
-void process_words(MarkovChain *markov_chain, char *prev_word, char *current_word) {
-    if (!prev_word || !current_word) return;
-
-    // Find or create MarkovNodes for the words
-    Node *prev_node = add_to_database(markov_chain, prev_word);
-    Node *current_node = add_to_database(markov_chain, current_word);
-    if(prev_node == NULL || current_node == NULL){
-        fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
-    }
-
-    if (!prev_node || !current_node) {
-        fprintf(stderr, "Error: Failed to add words to the database.\n");
-        return;
-    }
-
-    // Add current_node to the frequency list of prev_node
-    if (prev_word[strlen(prev_word) - 1 ] != '.' && add_node_to_frequency_list((MarkovNode *)prev_node->data, (MarkovNode *)current_node->data) != 0) {
-        fprintf(stderr, "Error: Failed to add to frequency list.\n");
-    }
-}
-
-
-
-
 int fill_database(FILE *fp, int words_to_read, MarkovChain *markov_chain) {
-    char prev_word[1024] = {0};
-    char current_word[1024];
+    if (fp == NULL || markov_chain == NULL || markov_chain->database == NULL) {
+        fprintf(stderr, "Invalid parameters to fill_markov_chain.\n");
+        return 1;
+    }
+
+    char buffer[4096]; // Buffer to read lines from the file
+    char prev_word[1024] = {0}; // To store the previous word
     int words_read = 0;
 
-    while (fscanf(fp, "%1023s", current_word) == 1) {
-        if (words_read > 0) {
-            // Add the pair (prev_word -> current_word) to the Markov Chain
-            process_words(markov_chain, prev_word, current_word);
-        }
+    while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        // Tokenize the line into words
+        char *current_word = strtok(buffer, DELIMITERS); // Delimiters: space, tab, newline
 
-        // Copy current_word to prev_word for the next iteration
-        strncpy(prev_word, current_word, sizeof (prev_word)- 1);
-        prev_word[sizeof(prev_word) - 1] = '\0'; // Ensure null-termination
+        while (current_word != NULL) {
+            if (words_read > 0) {
+                // Add the pair (prev_word -> current_word) to the MarkovChain
+                Node *prev_node = add_to_database(markov_chain, prev_word);
+                Node *current_node = add_to_database(markov_chain, current_word);
 
-        words_read++;
-        if (words_to_read > 0 && words_read >= words_to_read) {
-            return 1;
+                if (prev_node == NULL || current_node == NULL) {
+                    fprintf(stderr, "Error: Failed to process words.\n");
+                    return 1;
+                }
+
+                if (prev_word[strlen(prev_word) - 1] != '.') {
+                    if (add_node_to_frequency_list((MarkovNode *)prev_node->data, (MarkovNode *)current_node->data) != 0) {
+                        fprintf(stderr, "Error: Failed to add node to frequency list.\n");
+                        return 1;
+                    }
+                }
+            }
+
+            // Move to the next word
+            strncpy(prev_word, current_word, sizeof(prev_word) - 1);
+            prev_word[sizeof(prev_word) - 1] = '\0'; // Ensure null-termination
+            words_read++;
+
+            // Stop if the maximum word count is reached
+            if (words_to_read > 0 && words_read >= words_to_read) {
+                return 0;
+            }
+
+            current_word = strtok(NULL, " \t\n\r");
         }
     }
 
     return 0;
 }
+
 
 
 MarkovChain *initialize_markov_chain(){
@@ -187,7 +190,7 @@ int main(int argc, char *argv[]){
     }
 
     //Filling the database
-    if(fill_database(file, words_to_read, markov_chain) < 0){
+    if(fill_database(file, words_to_read, markov_chain) != 0){
         fprintf(stderr, "Error: Filling database failed");
         free_database(&markov_chain);
         fclose(file);
