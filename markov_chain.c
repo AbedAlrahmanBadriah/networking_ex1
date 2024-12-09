@@ -1,5 +1,7 @@
 #include <string.h>
 #include "markov_chain.h"
+#define _POSIX_C_SOURCE 200809L
+
 
 /**
  * Get random number between 0 and max_number [0, max_number).
@@ -8,6 +10,10 @@
  */
 int get_random_number(int max_number)
 {
+    if (max_number <= 0) {
+        fprintf(stderr, "Error: Invalid max_number for random number generation.\n");
+        exit(EXIT_FAILURE);
+    }
     return rand() % max_number;
 }
 
@@ -105,6 +111,9 @@ Node* add_to_database(MarkovChain *markov_chain, char *data_ptr) {
     }
 
     // Duplicate the string for newMarkovNode->data
+
+
+
     newMarkovNode->data = strdup(data_ptr);
     if (newMarkovNode->data == NULL) {
         free(newMarkovNode); // Free the MarkovNode structure if strdup fails
@@ -217,6 +226,11 @@ MarkovNode* get_first_random_node(MarkovChain *markov_chain) {
         }
 
         MarkovNode* markov_node = (MarkovNode*) current->data;
+        if(current == NULL || current->data == NULL){
+            fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
+            return NULL;
+        }
+
         char* word = markov_node->data;
         if(word[strlen(word) - 1] != '.'){
             return markov_node;
@@ -265,33 +279,7 @@ MarkovNode* get_next_random_node(MarkovNode *cur_markov_node){
     return NULL;
 }
 
-//void generate_tweet(MarkovNode *first_node, int max_length){
-//    if(first_node == NULL || max_length <= 0){
-//        fprintf(stderr, "Invalid parameter");
-//        exit(EXIT_FAILURE);
-//    }
-//
-//    MarkovNode *current = first_node;
-//    if(current == NULL){
-//        free(current);
-//        return;
-//    }
-//    int wordCounter = 0;
-//
-//    while(wordCounter < max_length){
-//        printf("%s", current->data);
-//        wordCounter++;
-//
-//        if(current->data[strlen(current->data) - 1] == '.')
-//            break;
-//
-//        if(wordCounter < max_length)
-//            printf(" ");
-//
-//        current = get_next_random_node(current);
-//    }
-//    printf("\n");
-//}
+
 
 void generate_tweet(MarkovNode *first_node, int max_length) {
     if (first_node == NULL) {

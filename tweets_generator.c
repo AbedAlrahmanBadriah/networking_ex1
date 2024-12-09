@@ -15,7 +15,7 @@ int fill_database(FILE *fp, int words_to_read, MarkovChain *markov_chain) {
         return 1;
     }
 
-    char buffer[4096]; // Buffer to read lines from the file
+    char buffer[1000]; // Buffer to read lines from the file
     char prev_word[1024] = {0}; // To store the previous word
     int words_read = 0;
 
@@ -43,7 +43,7 @@ int fill_database(FILE *fp, int words_to_read, MarkovChain *markov_chain) {
             }
 
             // Move to the next word
-            strncpy(prev_word, current_word, sizeof(prev_word) - 1);
+            strncpy(prev_word, current_word, sizeof(prev_word) -1);
             prev_word[sizeof(prev_word) - 1] = '\0'; // Ensure null-termination
             words_read++;
 
@@ -159,12 +159,17 @@ void print_markov_chain(MarkovChain *markov_chain) {
 //}
 
 int main(int argc, char *argv[]){
-
-    if(argc != 5){
-        fprintf(stderr, NUM_ARGS_ERROR);
-        exit(EXIT_FAILURE);
-    }
-
+//    for (int i =0; i< argc; i++) {
+//        printf("%s ", argv[i]);
+//    }
+//    if(argc !=5){
+//    fprintf(stderr, NUM_ARGS_ERROR);
+//    exit(EXIT_FAILURE);
+//}
+    argv[1]  = "55";
+    argv[2] = "30";
+    argv[3] = "/home/student/CLionProjects/ex1/justdoit_tweets.txt";
+    argv[4] = "30";
     int seed = atoi(argv[1]);
     int num_of_tweets = atoi(argv[2]);
     char* file_path = argv[3];
@@ -208,9 +213,11 @@ int main(int argc, char *argv[]){
             free_database(&markov_chain);
             exit(EXIT_FAILURE);
         }
-        printf("Tweet<%d>", i);
+        printf("Tweet<%d>", i+1);
         generate_tweet(starting_node, 20);
     }
+
+    print_markov_chain(markov_chain);
 
     free_database(&markov_chain);
 
