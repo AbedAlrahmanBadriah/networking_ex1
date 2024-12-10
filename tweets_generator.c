@@ -3,6 +3,7 @@
 #include "markov_chain.h"
 
 
+
 #define FILE_PATH_ERROR "Error: incorrect file path"
 #define NUM_ARGS_ERROR "Usage: invalid number of arguments"
 
@@ -79,16 +80,23 @@ MarkovChain *initialize_markov_chain(){
     return markov_chain;
 }
 
+
 int main(int argc, char *argv[]){
-    if(argc !=5){
-    fprintf(stderr, NUM_ARGS_ERROR);
-    exit(EXIT_FAILURE);
+    if(argc !=4 && argc != 5){
+        fprintf(stderr, NUM_ARGS_ERROR);
+        exit(EXIT_FAILURE);
     }
+
+
 
     int seed = atoi(argv[1]);
     int num_of_tweets = atoi(argv[2]);
     char* file_path = argv[3];
-    int words_to_read = atoi(argv[4]);
+    int words_to_read = -1;
+
+    if(argc == 5){
+        words_to_read = atoi(argv[4]);
+    }
 
     //Setting the seed
     srand(seed);

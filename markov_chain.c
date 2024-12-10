@@ -56,7 +56,7 @@ void free_database(MarkovChain **ptr_chain) {
     // Free the MarkovChain structure itself
     free(markovChain);
 
-    *ptr_chain = NULL; // Nullify the pointer to avoid dangling pointers
+    *ptr_chain = NULL;
 }
 
 char *custom_strdup(const char *s) {
@@ -264,7 +264,7 @@ MarkovNode* get_next_random_node(MarkovNode *cur_markov_node){
 
 void generate_tweet(MarkovNode *first_node, int max_length) {
     if (first_node == NULL) {
-        fprintf(stderr, "Error: First node is NULL.\n");
+        fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
         return;
     }
     MarkovNode *current_node = first_node;
