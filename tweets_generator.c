@@ -30,13 +30,13 @@ int fill_database(FILE *fp, int words_to_read, MarkovChain *markov_chain) {
                 Node *current_node = add_to_database(markov_chain, current_word);
 
                 if (prev_node == NULL || current_node == NULL) {
-                    fprintf(stderr, "Error: Failed to process words.\n");
+                    fprintf(stderr, "Error: Failed to process words.");
                     return 1;
                 }
 
                 if (prev_word[strlen(prev_word) - 1] != '.') {
                     if (add_node_to_frequency_list((MarkovNode *)prev_node->data, (MarkovNode *)current_node->data) != 0) {
-                        fprintf(stderr, "Error: Failed to add node to frequency list.\n");
+                        fprintf(stderr, "Error: Failed to add node to frequency list.");
                         return 1;
                     }
                 }
@@ -55,11 +55,8 @@ int fill_database(FILE *fp, int words_to_read, MarkovChain *markov_chain) {
             current_word = strtok(NULL, " \t\n\r");
         }
     }
-
     return 0;
 }
-
-
 
 MarkovChain *initialize_markov_chain(){
 
@@ -82,94 +79,12 @@ MarkovChain *initialize_markov_chain(){
     return markov_chain;
 }
 
-
-
-void print_markov_chain(MarkovChain *markov_chain) {
-    if (!markov_chain || !markov_chain->database) {
-        printf("Markov Chain is empty or not initialized.\n");
-        return;
-    }
-
-    Node *current = markov_chain->database->first;
-
-    printf("Markov Chain:\n");
-    while (current) {
-        MarkovNode *markov_node = (MarkovNode *)current->data;
-
-        // Print the data of the current MarkovNode
-        printf("Node: %s\n", markov_node->data);
-
-        // Print the frequency list for this MarkovNode
-        if (markov_node->frequency_list) {
-            printf("  Frequency List:\n");
-            for (int i = 0; markov_node->frequency_list[i].markov_node != NULL; i++) {
-                MarkovNode *next_node = markov_node->frequency_list[i].markov_node;
-                int frequency = markov_node->frequency_list[i].frequency;
-
-                printf("    - %s: %d\n", next_node->data, frequency);
-
-            }
-        } else {
-            printf("  Frequency List: (empty)\n");
-        }
-
-        current = current->next;
-    }
-}
-
-
-
-//
-//int main(){
-//    srand(65);
-//    MarkovChain *markov_chain = initialize_markov_chain();
-//
-//    FILE *fp = fopen("/home/student/CLionProjects/ex1/test.txt", "r");
-//    if (!fp) {
-//        fprintf(stderr, FILE_PATH_ERROR);
-//        return 1;
-//    }
-//
-//    int words_to_read = 30; // Example limit
-//    if (fill_database(fp, words_to_read, markov_chain) == 0) {
-//        printf("Database successfully filled with words.\n");
-//    } else {
-//        printf("Error filling database.\n");
-//    }
-//
-//
-//
-//    fclose(fp);
-//
-//    print_markov_chain(markov_chain);
-//
-//    MarkovNode *m = get_first_random_node(markov_chain);
-//    printf("first node: %s\n", m->data);
-//    MarkovNode *o = get_next_random_node(m);
-//    o = (MarkovNode* )get_node_from_database(markov_chain, o->data)->data;
-////    char* data = o->data;
-////    printf("%s\n", data);
-////    MarkovNode *tmp = (MarkovNode*)get_node_from_database(markov_chain, data)->data;
-////    printf("%s\n", tmp->data);
-//    printf("second node: %s\n", o->data);
-//
-//    generate_tweet(m, 30);
-//    // Free memory (not shown here, but you should free the MarkovChain and database)
-//    return 0;
-//}
-
 int main(int argc, char *argv[]){
-//    for (int i =0; i< argc; i++) {
-//        printf("%s ", argv[i]);
-//    }
-//    if(argc !=5){
-//    fprintf(stderr, NUM_ARGS_ERROR);
-//    exit(EXIT_FAILURE);
-//}
-    argv[1]  = "55";
-    argv[2] = "30";
-    argv[3] = "/home/student/CLionProjects/ex1/justdoit_tweets.txt";
-    argv[4] = "30";
+    if(argc !=5){
+    fprintf(stderr, NUM_ARGS_ERROR);
+    exit(EXIT_FAILURE);
+    }
+
     int seed = atoi(argv[1]);
     int num_of_tweets = atoi(argv[2]);
     char* file_path = argv[3];
@@ -177,7 +92,6 @@ int main(int argc, char *argv[]){
 
     //Setting the seed
     srand(seed);
-
     //Opining the corpus file
     FILE *file = fopen(file_path, "r");
     if(file == NULL){
@@ -205,7 +119,6 @@ int main(int argc, char *argv[]){
     //Close the file
     fclose(file);
 
-
     //Tweets generation
     for(int i=0; i< num_of_tweets; i++){
         MarkovNode *starting_node = get_first_random_node(markov_chain);
@@ -213,11 +126,11 @@ int main(int argc, char *argv[]){
             free_database(&markov_chain);
             exit(EXIT_FAILURE);
         }
-        printf("Tweet<%d>", i+1);
+        printf("Tweet %d: ", i+1);
         generate_tweet(starting_node, 20);
     }
 
-    print_markov_chain(markov_chain);
+    //print_markov_chain(markov_chain);
 
     free_database(&markov_chain);
 

@@ -1,6 +1,7 @@
 #include <string.h>
 #include "markov_chain.h"
-#define _POSIX_C_SOURCE 200809L
+#include <stdlib.h>
+
 
 
 /**
@@ -16,7 +17,6 @@ int get_random_number(int max_number)
     }
     return rand() % max_number;
 }
-
 
 void free_database(MarkovChain **ptr_chain) {
     if (ptr_chain == NULL || *ptr_chain == NULL) return;
@@ -59,32 +59,35 @@ void free_database(MarkovChain **ptr_chain) {
     *ptr_chain = NULL; // Nullify the pointer to avoid dangling pointers
 }
 
+char *custom_strdup(const char *s) {
+    if (s == NULL) return NULL;
 
+    size_t len = strlen(s) + 1; // +1 for null terminator
+    char *dup = malloc(len);
+    if (dup == NULL) return NULL; // Allocation failed
+
+    memcpy(dup, s, len);
+    return dup;
+}
 
 Node* get_node_from_database(MarkovChain *markov_chain, char *data_ptr){
     //checks if markov_chain or the database exist.
     if (markov_chain == NULL || markov_chain->database == NULL) {
         return NULL;
     }
-
     //searching for node
     Node *current = markov_chain->database->first;
 
     while (current) {
         MarkovNode *markov_node = (MarkovNode *)current->data;
-
         if (markov_node == NULL || markov_node->data == NULL) {
             fprintf(stderr, "Error: Null MarkovNode or data in the database.\n");
             return NULL;
         }
-
-        //printf("Comparing '%s' with '%s'\n", markov_node->data, data_ptr);
-
-         //Compare data to see if it matches the current node's data
+        //Compare data to see if it matches the current node's data
         if (strcmp(markov_node->data, data_ptr) == 0) {
             return current;
         }
-
         current = current->next;
     }
 
@@ -96,31 +99,25 @@ Node* add_to_database(MarkovChain *markov_chain, char *data_ptr) {
     if (markov_chain == NULL || markov_chain->database == NULL) {
         return NULL;
     }
-
     // Check if the node already exists in the database
     Node *checkIfExists = get_node_from_database(markov_chain, data_ptr);
     if (checkIfExists != NULL) {
         return checkIfExists; // Return the existing node
     }
-
     // Allocate a new MarkovNode
     MarkovNode *newMarkovNode = (MarkovNode *)malloc(sizeof(MarkovNode));
     if (newMarkovNode == NULL) {
         fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
         return NULL;
     }
-
     // Duplicate the string for newMarkovNode->data
-
-
-
-    newMarkovNode->data = strdup(data_ptr);
+    //here the strdup() didnt work for me so i made a custom one.
+    newMarkovNode->data = custom_strdup(data_ptr);
     if (newMarkovNode->data == NULL) {
         free(newMarkovNode); // Free the MarkovNode structure if strdup fails
         fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
         return NULL;
     }
-
     // Initialize frequency_list
     newMarkovNode->frequency_list = NULL;
 
@@ -132,19 +129,16 @@ Node* add_to_database(MarkovChain *markov_chain, char *data_ptr) {
         fprintf(stderr, "Error: Failed to add node to database.\n");
         return NULL;
     }
-
-    return markov_chain->database->last; // Return the last added node
+    // Return the last added node
+    return markov_chain->database->last;
 }
 
-
 int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
-
     //check if first_node or second_node exist
     if(first_node == NULL || second_node == NULL){
+        fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
         return 1;
     }
-
-
     // Check if the frequency list exists
     if (first_node->frequency_list == NULL) {
         first_node->frequency_list = malloc(2 * sizeof(MarkovNodeFrequency));
@@ -160,12 +154,8 @@ int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
         first_node->frequency_list->size = 1; // Set size to 1
         return 0;
     }
-
-
-
     //finding the frequencyList size
     int currentSize = first_node->frequency_list->size;
-
 
     //checking if the second_node already exists in the frequencyList
     //if it does exist, it adds 1 to it frequency
@@ -176,11 +166,9 @@ int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
             return 0;
         }
     }
-
     //allocating space for adding the second_node if it doesnt already exists
     MarkovNodeFrequency *newList =
             realloc(first_node->frequency_list, (currentSize +2) * sizeof (MarkovNodeFrequency));
-
 
     if(newList == NULL){
         fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
@@ -196,14 +184,8 @@ int add_node_to_frequency_list(MarkovNode *first_node, MarkovNode *second_node){
     first_node->frequency_list[currentSize + 1].markov_node = NULL;
     first_node->frequency_list->size++;
 
-
     return 0;
 }
-
-
-
-
-
 
 MarkovNode* get_first_random_node(MarkovChain *markov_chain) {
     //checks if the markovNode and it's dataBase and it's first_node exist
@@ -218,28 +200,31 @@ MarkovNode* get_first_random_node(MarkovChain *markov_chain) {
     while(1) {
 
         int randIndex = get_random_number(markov_chain->database->size);
-
+        if(randIndex >= markov_chain->database->size){
+            fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
+            return NULL;
+        }
         //pointing at the random node then returning it
         current = markov_chain->database->first;
-        for (int i = 0; i < randIndex; i++) {
+
+        for (int i = 0; i < randIndex && current != NULL; i++) {
             current = current->next;
         }
-
-        MarkovNode* markov_node = (MarkovNode*) current->data;
         if(current == NULL || current->data == NULL){
             fprintf(stderr, ALLOCATION_ERROR_MASSAGE);
             return NULL;
         }
 
+        MarkovNode* markov_node = (MarkovNode*) current->data;
+        //check if the word ends with '.'
         char* word = markov_node->data;
         if(word[strlen(word) - 1] != '.'){
             return markov_node;
         }
     }
-
-
 }
 
+//calculate the sum of all frequencies in a MarkovNode
 int calculate_total_frequencies(MarkovNode *markov_node) {
     // Check if the node or its frequency list exists
     if (markov_node == NULL || markov_node->frequency_list == NULL) {
@@ -270,16 +255,12 @@ MarkovNode* get_next_random_node(MarkovNode *cur_markov_node){
         MarkovNodeFrequency *tmp = &cur_markov_node->frequency_list[i];
         sumOfFrequencies += tmp->frequency;
 
-
         if (randomNode < sumOfFrequencies)
             return tmp->markov_node;
-
     }
     fprintf(stderr, "Failed to get a second node");
     return NULL;
 }
-
-
 
 void generate_tweet(MarkovNode *first_node, int max_length) {
     if (first_node == NULL) {
@@ -288,7 +269,7 @@ void generate_tweet(MarkovNode *first_node, int max_length) {
     }
     MarkovNode *current_node = first_node;
     for (int i = 0; i < max_length && current_node != NULL; i++) {
-        if (current_node->frequency_list == NULL || i == max_length - 1) {
+        if (current_node->frequency_list == NULL || i == max_length - 1 || calculate_total_frequencies(current_node) == 0) {
             printf("%s", current_node->data);
             break;
         }
