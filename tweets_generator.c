@@ -130,7 +130,7 @@ int main(int argc, char *argv[]){
         generate_tweet(starting_node, 20);
     }
 
-    //print_markov_chain(markov_chain);
+    
 
     free_database(&markov_chain);
 
